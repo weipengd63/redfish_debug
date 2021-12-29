@@ -65,8 +65,8 @@ class paramikoServer:
                 timeout=self._connect_timeout,
                 )
             self._remotessh = remotessh
-        except socket.error:
-            print(self._hostname + ": SSH failed with socket error.\n")
+        #except socket.error:
+        #    print(self._hostname + ": SSH failed with socket error.\n")
         except paramiko.BadHostKeyException:
             print(self._hostname + ": SSH failed with server's host key unable get verified.\n")
         except paramiko.AuthenticationException:
@@ -170,19 +170,19 @@ class paramikoServer:
         except Exception as e:
             print("{}".format(e))
 
-
+"""
 if __name__=="__main__":
     sut_IP = "10.239.46.23"
     sut_user = "root"
     sut_password = "password"
-    command = "sudo sh /home/OpenBMC/Set_BMC_User.sh"
+    command = "sudo sh /home/Set_BMC_User.sh"
     try:
         sutserver = paramikoServer(sut_IP, sut_user, sut_password)
         print("Establish ssh seesion to {}.\n".format(sut_IP))
         sutserver.connectSsh()
-        if not sutserver.isFileExists("/home/OpenBMC/Set_BMC_User.sh"):
+        if not sutserver.isFileExists("/home/Set_BMC_User.sh"):
             print("script doesn't exist on SUT, upload from host")
-            sutserver.sendFile("C:/Users/weipengd/OneDrive - Intel Corporation/Desktop/intel doc/workspace/新建文件夹/redfish_debug/Set_BMC_User.sh","/home/OpenBMC/Set_BMC_User.sh")
+            sutserver.sendFile("C:/Users/weipengd/OneDrive - Intel Corporation/Desktop/intel doc/workspace/新建文件夹/redfish_debug/Set_BMC_User.sh","/home/Set_BMC_User.sh")
         print("Run command: {}.\n".format(command))
         stdout = sutserver.runCommand(command)
     except:
@@ -192,3 +192,4 @@ if __name__=="__main__":
     print(stdout[-1])
     print("execution finished")
 
+"""

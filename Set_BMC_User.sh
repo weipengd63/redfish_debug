@@ -24,3 +24,4 @@ else
     ipmitool channel setaccess 3 $user_num ipmi=on privilege=4
     echo $temp_ip
 fi
+
