@@ -85,7 +85,7 @@ class Debug_Info_Collection(object):
 
         if stdout is not None:
             ret_bmc_IP=str(stdout[-1]).replace('\n', '')
-        print(ret_bmc_IP)
+        #print(ret_bmc_IP)
         return ret_bmc_IP
     
     def run(self):
@@ -101,32 +101,38 @@ class Debug_Info_Collection(object):
         secs = cf.sections()   
 
         start_time = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
-        print(start_time)
+        #print(start_time)
         #create redfish connection and collect system metadata
         with RedfishSession(ip=self._bmc_IP,user=self._bmc_username,password=self._bmc_password,ifVerify=self._ifverify) as redfish_session:
             with open('results/{}_metadata.txt'.format(start_time),'w') as f:
                 for section in secs:
                     data_name = section.strip()
+                    if 'All' not in self._data_type and data_name not in self._data_type:
+                        continue
                     print(data_name)
                     data_category = cf.get(data_name,"Category")
                     #print(data_category)
                     data_path = cf.get(data_name,"Path")
+                    data_collect = cf.getboolean(data_name,"Collect")
+                    if not data_collect:
+                        continue
 
                     data = "[******{}******]\n".format(data_name)
                     f.write(data)
                     if data_category == 'version':
-                        #print("start read data")
+                        data = ""
                         data_key = cf.get(data_name,"Key").split(',')
-                        data_raw = redfish_session.get(data_path).json()
-                        #print(data_key)
-                        
+                        try:
+                            data_raw = redfish_session.get(data_path).json()
+                        except:
+                            continue
                         for k in data_key:
                             data += "{}, ".format(data_raw[k])
                         print(data+"\n")
                         f.write(data+"\n")
                     elif data_category == 'log':                         
                         data_path += str(cf.get(data_name,"Skip"))  
-                        print(data_path)           
+                        #print(data_path)           
                         while data_path is not None:
                             try:
                                 data_raw = redfish_session.get(data_path).json()
@@ -136,7 +142,6 @@ class Debug_Info_Collection(object):
                                     f.write(data+"\n")
                                 data_path = data_raw.get('Members@odata.nextLink')
                                 print(data_raw.get('Members@odata.count'))
-                                #data_path = None
                             except:
                                 continue
                     elif data_category == 'HWinfo':
@@ -157,11 +162,11 @@ class Debug_Info_Collection(object):
                                 print(data)
                                 f.write(data)
                             except Exception as e:
-                                data += "No DIMM on {} slot \n".format(item_name)
+                                data += "No HW on {} is detected \n".format(item_name)
                                 print(data)
                                 f.write(data)
                                 continue 
-                        
+        return True            
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
@@ -171,7 +176,7 @@ if __name__=="__main__":
     parser.add_argument('-P', '--sut_password', default='password')
     parser.add_argument('-u', '--username', default='debuguser')
     parser.add_argument('-p', '--password', default='0penBmc1')
-    parser.add_argument('-d', "--data_type", default='All')
+    parser.add_argument('-d', "--data_type", default='All', nargs='*')
     parser.add_argument(
         "--no-verify",
         dest='verify',
